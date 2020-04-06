@@ -1,5 +1,5 @@
 # Creating Pandas Data Frames from Johns Hopkins Raw CSV Files
-![US COVID-19 Cases By County, Per Capita](us_map.png)
+![US COVID-19 Cases By County](us_map.png)
 
 ## Data Sources
 * Johns Hopkins CSSE COVID-19 Data Repository https://github.com/CSSEGISandData/COVID-19
