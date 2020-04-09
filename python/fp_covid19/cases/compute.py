@@ -1,31 +1,37 @@
 # -*- coding: utf-8 -*-
-"""New cases"""
-from typing import List
+"""Module for computing cases"""
 import numpy as np
 import pandas as pd
+from fp_covid19.data.bears import Bears
 
-def new_cases_df(
-    dataframe: pd.DataFrame, datetime_index: List[str]) -> pd.DataFrame:
-  """Computes new case in DataFrame"""
-  assert len(datetime_index) > 1
-  new_df = dataframe.copy()
+def new_cases(bears: Bears, periods=1) -> Bears:
+  """Computes new cases.
+
+  Args:
+    bears (Bears): Time-series :math:`x[n]`
+    periods (int): Time difference, :math:`p` to shift for computing
+      :math:`y[n] = x[n] - x[n - p]`.
+
+  Returns:
+    The difference time-series :math:`y[n] = x[n] - x[n - p]`
+  """
+  assert len(bears.datetime_index) > 1
+  new_df, datetime_index = bears.df.copy(), bears.datetime_index
   new_df[datetime_index] = (
-      dataframe[datetime_index].diff(periods=1, axis='columns'))
-  new_df.drop(datetime_index[0], 'columns', inplace=True)
-  return new_df
+      bears.df[datetime_index].diff(periods=periods, axis='columns'))
+  return type(bears)(dataframe=new_df, datetime_fmt=bears.datetime_fmt)
 
-def per_capita_df(
-    dataframe: pd.DataFrame,
-    datetime_index: List[str],
-    population: pd.DataFrame) -> pd.DataFrame:
+def per_capita(bears: Bears, population: pd.DataFrame) -> Bears:
   """Computes per-capita cases.
 
   Args:
-    dataframe: Contains time series for number of cases.
-    datetime_index: List of column labels for time series
-    population:
+    bears (Bears): `Bears` time-series
+    population (pd.DataFrame): Population dataframe as returned by, for
+      instance, :py:func:`get_us_population()`.
   """
-  per_capita = dataframe.copy(deep=True)
-  per_capita.loc[:, datetime_index] = (
-      dataframe.loc[:, datetime_index].truediv(population, axis='index'))
-  return per_capita[~per_capita.isin([np.nan, np.inf, -np.inf]).any(1)]
+  per_capita_b = bears.copy(deep=True)
+  per_capita_b.df.loc[:, bears.datetime_index] = (
+      bears.df.loc[:, bears.datetime_index].truediv(population, axis='index'))
+  per_capita_b.df = per_capita_b.df[
+      ~per_capita_b.df.isin([np.nan, np.inf, -np.inf]).any(1)]
+  return per_capita_b
