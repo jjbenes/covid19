@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """A Python Class that Encapsulates a Panda Series or Dataframe"""
 from __future__ import annotations
-from abc import ABC, abstractmethod
+from abc import ABC
 from typing import List, Tuple
 import copy
 import datetime
@@ -42,8 +42,6 @@ class Bears(ABC):
         'Use either `from_csv` and `csv_specs` or `dataframe`')
     self._datetime_fmt = datetime_fmt
     if from_csv:
-      for i in csv_specs:
-        assert isinstance(i, str)
       self._df = self.read_time_series_csv(csv_specs, datetime_fmt)
     else:
       self._df = dataframe
@@ -96,7 +94,6 @@ class Bears(ABC):
         self.datetime_fmt)
     return datetime_index
 
-  @abstractmethod
   def read_time_series_csv(
       self, csv_specs: CsvSpecs, datetime_fmt: str) -> pd.DataFrame:
     """Initializes obejct from a CSV file
@@ -114,6 +111,7 @@ class Bears(ABC):
     Returns:
       pd.DataFrame` read from the input CSV file
     """
+    raise NotImplementedError
 
   def partition_datetime_columns(
       self, datetime_fmt='%m/%d/%y') -> Tuple[List, List]:

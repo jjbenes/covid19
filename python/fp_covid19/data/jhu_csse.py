@@ -1,25 +1,36 @@
 # -*- coding: utf-8 -*-
 """Johns Hopkins CSSE COVID-19 Data Import"""
 from __future__ import annotations
-from typing import Dict, List
+from typing import Dict
 import numpy as np
 import pandas as pd
 from fp_covid19.data.bears import Bears, CsvSpecs
+from fp_covid19.cases.compute import (
+    counties2states_df, assert_all_not_na)
 
-JHU_CSV_URL_ROOT = (
+CSV_URL_ROOT = (
     'https://raw.githubusercontent.com/'
     'CSSEGISandData/COVID-19/master/csse_covid_19_data/'
     'csse_covid_19_time_series/')
-JHU_CSV_FILE_PREFIX = 'time_series_covid19'
-JHU_CSV_COL_UID = 'UID'
-JHU_CSV_ENCODING = 'ISO-8859-1'
-JHU_CSV_DATETIME_FMT = '%m/%d/%y'
+CSV_FILE_PREFIX = 'time_series_covid19'
+CSV_COL_UID = 'UID'
+CSV_ENCODING = 'ISO-8859-1'
+CSV_DATETIME_FMT = '%m/%d/%y'
+CSV_COLUMN_RENAME_DICT = {} # de facto standard
+
+def attribution() -> str:
+  """Returns data attribution string"""
+  return (
+      '\u0026copy; '
+      '<a href="https://github.com/CSSEGISandData/COVID-19">'
+      'Johns Hopkins University</a>. ')
+
 
 def stitch_time_series_csv_url(
     db_type: str,
     region: str,
-    url_root=JHU_CSV_URL_ROOT,
-    file_prefix=JHU_CSV_FILE_PREFIX) -> str:
+    url_root=CSV_URL_ROOT,
+    file_prefix=CSV_FILE_PREFIX) -> str:
   """Helper function to form a time-series URL
 
   Args:
@@ -40,7 +51,7 @@ class JhuCsse(Bears):
   """JHU CSSE data import"""
   def read_time_series_csv(
       self, csv_specs: CsvSpecs,
-      datetime_fmt: str = JHU_CSV_FILE_PREFIX) -> pd.DataFrame:
+      datetime_fmt: str = CSV_FILE_PREFIX) -> pd.DataFrame:
     """Converts JHU CSSE time-series CSV to Pandas `DataFrame`.
 
     Column labels:
@@ -49,7 +60,6 @@ class JhuCsse(Bears):
 
     Note:
       This function converts the FIPS code into a string without leading zeros.
-      Many geo json files are written this way.
 
     Note:
       As of 4/4/2020, the U.S. county file
@@ -92,7 +102,7 @@ def get_geo_df(
     url=(
         'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/'
         'csse_covid_19_data/UID_ISO_FIPS_LookUp_Table.csv'),
-    uid_col_label=JHU_CSV_COL_UID) -> pd.DataFrame:
+    uid_col_label=CSV_COL_UID) -> pd.DataFrame:
   """Creates Pandas data frame from the JHU geo code look-up table.
 
     `UID,iso2,iso3,code3,FIPS,Admin2,Province_State,Country_Region,Lat,
@@ -106,51 +116,18 @@ def get_geo_df(
       pd.DataFrame:
       Pandas `DataFrame` indexed by `uid_col_label`.
   """
-  return pd.read_csv(url, encoding=JHU_CSV_ENCODING).set_index(
+  return pd.read_csv(url, encoding=CSV_ENCODING).set_index(
       uid_col_label)
 
 
-def assert_all_not_na(dataframe, col=None):
-  """Asserts all fields in a col are not N/A."""
-  notna_bool = (dataframe.notna().all() if col is None
-                else dataframe[col].notna())
-  assert notna_bool.all(), (
-      'Found N/A cells in column {}: {}'.format(
-          col, dataframe[not notna_bool] if col
-          else dataframe[dataframe.notna()]))
-
-
-def counties2states_df(
-    counties_df: pd.DataFrame,
-    sum_col_index: List[str],
-    index='Province_State') -> pd.DataFrame:
-  """Sums counties cases to create state-level data frame.
-
-  Args:
-    counties_df: County-level `DataFrame`
-    sum_col_index (`[str]`): List of columns to be summed in parallel.
-      Pandas' `pivot_table()` may reorder columns, so this function calls
-      `reindex()` to preserve column order in `sum_col_index`.
-    index: Output `DataFrame` row index as a string
-
-  Returns:
-    pd.DataFrame:
-    States dataframe pivot table
-  """
-  return pd.pivot_table(
-      counties_df.loc[:, [index] + sum_col_index],
-      index=index,
-      values=sum_col_index,
-      aggfunc='sum').reindex(sum_col_index, axis=1)
-
-
 def get_covid19_us_bears(
-    url_root=JHU_CSV_URL_ROOT,
-    file_prefix=JHU_CSV_FILE_PREFIX,
-    uid_col_label=JHU_CSV_COL_UID,
-    encoding=JHU_CSV_ENCODING,
-    datetime_fmt=JHU_CSV_DATETIME_FMT) -> Dict:
-  """Converts JHU CSSE U.S. confirmed and deaths CSV files to Pandas `DataFrame`
+    url_root=CSV_URL_ROOT,
+    file_prefix=CSV_FILE_PREFIX,
+    uid_col_label=CSV_COL_UID,
+    encoding=CSV_ENCODING,
+    datetime_fmt=CSV_DATETIME_FMT) -> Dict[Dict[Bears]]:
+  """Converts JHU CSSE U.S. confirmed and deaths CSV files to state and county
+  `Bears` to a dictionary of dictionaries.
 
   Args:
     url_root (str): URL prefix for the CSV
@@ -187,11 +164,7 @@ def get_covid19_us_bears(
   return covid19
 
 
-def get_us_population(
-    url_root=JHU_CSV_URL_ROOT,
-    file_prefix=JHU_CSV_FILE_PREFIX,
-    uid_col_label=JHU_CSV_COL_UID,
-    encoding=JHU_CSV_ENCODING) -> Dict:
+def get_us_population() -> Dict:
   """Creates U.S. state and county population dataframes.
 
   Args:
@@ -275,9 +248,11 @@ def get_us_population(
       from_csv=True,
       csv_specs=CsvSpecs(
           url=stitch_time_series_csv_url(
-              'deaths', 'US', url_root=url_root, file_prefix=file_prefix),
-          uid_col_label=uid_col_label,
-          encoding=encoding))
+              'deaths', 'US',
+              url_root=CSV_URL_ROOT,
+              file_prefix=CSV_FILE_PREFIX),
+          uid_col_label=CSV_COL_UID,
+          encoding=CSV_ENCODING))
   population_col = covid19.non_datetime_index[-1]
   assert population_col == 'Population'
   population = {}
