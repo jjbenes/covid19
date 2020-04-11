@@ -41,5 +41,6 @@ contains Folium and GeoJSON helper routines to present the data visually using m
   * https://github.com/python-visualization/folium/blob/master/tests/us-counties.json
   * https://github.com/python-visualization/folium/blob/master/tests/us-states.json
 * The choropleths at https://first-principles.ai/covid-19/map.html were created from the Johns Hopkins COVID-19 data using the code here. The choropleths display U.S. state and county confirmed cases.
-* The map at https://first-principles.ai/covid-19/per-capita-map.html shows U.S. per-capita confirmed cases ranked daily from Jan 22, 2020. See this Jupyter notebook to learn how to create it:
-https://nbviewer.jupyter.org/github/jjbenes/covid19/blob/master/jupyter/covid19_us_per-capita.ipynb.
+* The map at https://first-principles.ai/covid-19/per-capita-map.html shows U.S. per-capita confirmed cases ranked daily from Jan 22, 2020. This Jupyter notebook creates it from USAFacts: 
+https://nbviewer.jupyter.org/github/jjbenes/covid19/blob/master/jupyter/covid19_usafacts.ipynb. This one creates it from JHU:
+https://nbviewer.jupyter.org/github/jjbenes/covid19/blob/master/jupyter/covid19_jhu_csse.ipynb. The difference is just one import statement.
