@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 """Helper Library for Folium"""
-from time import strptime, mktime
 import numpy as np
 import folium
 from branca.colormap import linear
@@ -28,6 +27,7 @@ def folium_del_legend(choropleth: folium.Choropleth):
     choropleth._children.pop(del_item) # pylint: disable=protected-access
   return choropleth
 
+
 def folium_add_map_title(title: str, folium_map: folium.Map):
   """Adds a map title"""
   html = '''
@@ -36,13 +36,6 @@ def folium_add_map_title(title: str, folium_map: folium.Map):
      border:2px solid grey; z-index:9999; font-size:10pt;
      “>{}</div>'''.format(title)
   folium_map.get_root().html.add_child(folium.Element(html))
-
-
-def to_datetime(date_str, date_format="%m/%d/%y"):
-  """Converts string to datetime to POSIX time"""
-  timestamp = strptime(date_str, date_format)
-  epoch = mktime(timestamp)
-  return int(epoch)
 
 
 def cmap_ranked_df(

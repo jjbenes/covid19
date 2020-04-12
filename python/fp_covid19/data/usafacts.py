@@ -13,7 +13,6 @@ CSV_FILE_PREFIX = 'covid'
 CSV_FILE_SUFFIX = 'usafacts'
 CSV_COL_UID = None
 CSV_ENCODING = None #'ISO-8859-1'
-CSV_DATETIME_FMT = '%m/%d/%y'
 CSV_COLUMN_RENAME_DICT = {
     'countyFIPS': 'FIPS',
     'State': 'Province_State',
@@ -23,9 +22,7 @@ CSV_COLUMN_RENAME_DICT = {
 
 def attribution() -> str:
   """Returns data attribution string"""
-  return (
-      'Created with data by \u0026copy; <a href="https://usafacts.org">'
-      'USAFacts</a>. ')
+  return ('\u0026copy; <a href="https://usafacts.org">USAFacts</a>. ')
 
 
 def stitch_time_series_csv_url(
@@ -65,8 +62,7 @@ def _canonical_df(dataframe, column_rename_dict):
 class Usafacts(Bears):
   """USAFACTS data import"""
   def read_time_series_csv(
-      self, csv_specs: CsvSpecs,
-      datetime_fmt: str = CSV_FILE_PREFIX) -> pd.DataFrame:
+      self, csv_specs: CsvSpecs) -> pd.DataFrame:
     """Converts USAFACTS time-series CSV to Pandas `DataFrame`.
 
     * Column labels:
@@ -118,8 +114,7 @@ def get_covid19_us_bears(
     url_root=CSV_URL_ROOT,
     file_prefix=CSV_FILE_PREFIX,
     file_suffix=CSV_FILE_SUFFIX,
-    encoding=CSV_ENCODING,
-    datetime_fmt=CSV_DATETIME_FMT) -> Dict[Dict[Bears]]:
+    encoding=CSV_ENCODING) -> Dict[Dict[Bears]]:
   """Converts USAFACTS confirmed and deaths CSV files to state and county
   `Bears` to a dictionary of dictionaries
 
@@ -148,13 +143,11 @@ def get_covid19_us_bears(
                 db_type=db_type, url_root=url_root, file_prefix=file_prefix,
                 file_suffix=file_suffix),
             uid_col_label=CSV_COL_UID,
-            encoding=encoding),
-        datetime_fmt=datetime_fmt)
+            encoding=encoding))
   for db_type in ['confirmed', 'deaths']:
     counties = covid19[db_type]['counties']
     covid19[db_type]['states'] = Usafacts(
-        dataframe=counties2states_df(counties.df, counties.datetime_index),
-        datetime_fmt=counties.datetime_fmt)
+        dataframe=counties2states_df(counties.df, counties.datetime_index))
   return covid19
 
 
@@ -170,56 +163,53 @@ def get_us_population() -> Dict:
   Examples:
     >>> population = get_us_population()
     >>> population['counties']
-               FIPS      Admin2            Province_State  Population
-    UID
-    16           60         NaN            American Samoa       55641
-    316          66         NaN                      Guam      164229
-    580          69         NaN  Northern Mariana Islands       55144
-    630          72         NaN               Puerto Rico     2933408
-    850          78         NaN            Virgin Islands      107268
-    ...         ...         ...                       ...         ...
-    84090053  90053  Unassigned                Washington           0
-    84090054  90054  Unassigned             West Virginia           0
-    84090055  90055  Unassigned                 Wisconsin           0
-    84090056  90056  Unassigned                   Wyoming           0
-    84099999  99999         NaN            Grand Princess           0
-    [3253 rows x 4 columns]
-    >>> population['counties'][population['counties']['Province_State']=='Nevada']
-               FIPS       Admin2 Province_State  Population
-    UID
-    84032001  32001    Churchill         Nevada       24909
-    84032003  32003        Clark         Nevada     2266715
-    84032005  32005      Douglas         Nevada       48905
-    84032007  32007         Elko         Nevada       52778
-    84032009  32009    Esmeralda         Nevada         873
-    84032011  32011       Eureka         Nevada        2029
-    84032013  32013     Humboldt         Nevada       16831
-    84032015  32015       Lander         Nevada        5532
-    84032017  32017      Lincoln         Nevada        5183
-    84032019  32019         Lyon         Nevada       57510
-    84032021  32021      Mineral         Nevada        4505
-    84032023  32023          Nye         Nevada       46523
-    84032027  32027     Pershing         Nevada        6725
-    84032029  32029       Storey         Nevada        4123
-    84032031  32031       Washoe         Nevada      471519
-    84032033  32033   White Pine         Nevada        9580
-    84032510  32510  Carson City         Nevada       55916
-    84080032  80032    Out of NV         Nevada           0
-    84090032  90032   Unassigned         Nevada           0
+            FIPS	             Admin2 Province_State	Population
+    0       	0 Statewide Unallocated	            AL           0
+    1	     1001	     Autauga County	            AL       55869
+    2	     1003	     Baldwin County          	AL       223234
+    3	     1005	     Barbour County          	AL       24686
+    4	     1007	        Bibb County	            AL       22394
+    ...	...	...	...	...
+    3190	56037	  Sweetwater County	            WY	     42343
+    3191	56039      	   Teton County	            WY	     23464
+    3192	56041	       Uinta County	            WY	     20226
+    3193	56043	    Washakie County	            WY	      7805
+    3194	56045	      Weston County	            WY	      6927
+    3195 rows × 4 columns
+    >>> population['counties'][population['counties']['Province_State']=='NV']
+             FIPS	               Admin2	Province_State	Population
+    1776	    0	Statewide Unallocated	            NV	         0
+    1777	32001	     Churchill County	            NV	     24909
+    1778	32003	         Clark County	            NV	   2266715
+    1779	32005	       Douglas County	            NV	     48905
+    1780	32007	          Elko County	            NV	     52778
+    1781	32009	     Esmeralda County	            NV	       873
+    1782	32011	        Eureka County	            NV	      2029
+    1783	32013	      Humboldt County	            NV	     16831
+    1784	32015	        Lander County	            NV	      5532
+    1785	32017      	   Lincoln County	            NV	      5183
+    1786	32019	          Lyon County	            NV	     57510
+    1787	32021	       Mineral County	            NV	      4505
+    1788	32023	           Nye County	            NV	     46523
+    1789	32027	      Pershing County	            NV	      6725
+    1790	32029	        Storey County	            NV	      4123
+    1791	32031	        Washoe County	            NV	    471519
+    1792	32033	    White Pine County	            NV	      9580
+    1793	32510	          Carson City	            NV	     55916
     >>> population['states'].sort_values(by='Population', ascending=False)
-                              Population            Province_State
+        	Population	Province_State
     index
-    California                  39512223                California
-    Texas                       28995881                     Texas
-    New York                    23628065                  New York
-    Florida                     21477737                   Florida
-    Pennsylvania                12801989              Pennsylvania
-    Illinois                    12671821                  Illinois
-    Ohio                        11689100                      Ohio
-    Georgia                     10617423                   Georgia
-    North Carolina              10488084            North Carolina
-    Michigan                     9986857                  Michigan
-    New Jersey                   8882190                New Jersey
+    CA	      39512223	            CA
+    TX	      28995881	            TX
+    FL	      21477737	            FL
+    NY	      19453561	            NY
+    PA	      12801989	            PA
+    IL	      12671821	            IL
+    OH	      11689100	            OH
+    GA	      10617423	            GA
+    NC	      10488084	            NC
+    MI	       9986857	            MI
+    NJ	       8882190	            NJ
     ...
 
   Returns:

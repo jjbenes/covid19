@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """Module for computing cases"""
 from typing import Dict, List
+from time import strptime, mktime
+from dateutil.parser import parse
 import numpy as np
 import pandas as pd
 from fp_covid19.data.bears import Bears
@@ -56,7 +58,7 @@ def new_cases(bears: Bears, periods=1) -> Bears:
   new_df, datetime_index = bears.df.copy(), bears.datetime_index
   new_df[datetime_index] = (
       bears.df[datetime_index].diff(periods=periods, axis='columns'))
-  return type(bears)(dataframe=new_df, datetime_fmt=bears.datetime_fmt)
+  return type(bears)(dataframe=new_df)
 
 def per_capita(bears: Bears, population: pd.DataFrame) -> Bears:
   """Computes per-capita cases.
@@ -106,3 +108,19 @@ def counties2states_df(
       index=index,
       values=sum_col_index,
       aggfunc='sum').reindex(sum_col_index, axis=1)
+
+
+def to_epoch(date_str: str, date_format: str = None) -> int:
+  """Converts string to datetime to POSIX time.
+
+  Args:
+    date_str (str): Date as a string
+    date_format (str): Date format, e.g. `%m/%d/%y`. If `None`, uses
+      `dateutil.parser.parse()` to convert `date_str` to POSIX time
+
+  Returns:
+    int:
+    POSIX time, a.k.a. seconds since the Epoch, Unix time, and Epoch time
+  """
+  return int(mktime(strptime(date_str, date_format)) if date_format
+             else parse(date_str).timestamp())

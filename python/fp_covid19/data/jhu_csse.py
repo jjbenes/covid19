@@ -15,7 +15,6 @@ CSV_URL_ROOT = (
 CSV_FILE_PREFIX = 'time_series_covid19'
 CSV_COL_UID = 'UID'
 CSV_ENCODING = 'ISO-8859-1'
-CSV_DATETIME_FMT = '%m/%d/%y'
 CSV_COLUMN_RENAME_DICT = {} # de facto standard
 
 def attribution() -> str:
@@ -50,8 +49,7 @@ def stitch_time_series_csv_url(
 class JhuCsse(Bears):
   """JHU CSSE data import"""
   def read_time_series_csv(
-      self, csv_specs: CsvSpecs,
-      datetime_fmt: str = CSV_FILE_PREFIX) -> pd.DataFrame:
+      self, csv_specs: CsvSpecs) -> pd.DataFrame:
     """Converts JHU CSSE time-series CSV to Pandas `DataFrame`.
 
     Column labels:
@@ -124,8 +122,7 @@ def get_covid19_us_bears(
     url_root=CSV_URL_ROOT,
     file_prefix=CSV_FILE_PREFIX,
     uid_col_label=CSV_COL_UID,
-    encoding=CSV_ENCODING,
-    datetime_fmt=CSV_DATETIME_FMT) -> Dict[Dict[Bears]]:
+    encoding=CSV_ENCODING) -> Dict[Dict[Bears]]:
   """Converts JHU CSSE U.S. confirmed and deaths CSV files to state and county
   `Bears` to a dictionary of dictionaries.
 
@@ -153,14 +150,12 @@ def get_covid19_us_bears(
             url=stitch_time_series_csv_url(
                 db_type, 'US', url_root=url_root, file_prefix=file_prefix),
             uid_col_label=uid_col_label,
-            encoding=encoding),
-        datetime_fmt=datetime_fmt)
+            encoding=encoding))
     assert_all_not_na(covid19[db_type]['counties'].df, 'Province_State')
   for db_type in ['confirmed', 'deaths']:
     counties = covid19[db_type]['counties']
     covid19[db_type]['states'] = JhuCsse(
-        dataframe=counties2states_df(counties.df, counties.datetime_index),
-        datetime_fmt=counties.datetime_fmt)
+        dataframe=counties2states_df(counties.df, counties.datetime_index))
   return covid19
 
 

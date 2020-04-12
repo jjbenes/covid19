@@ -4,8 +4,8 @@ from __future__ import annotations
 from abc import ABC
 from typing import List, Tuple
 import copy
-import datetime
 from collections import namedtuple
+from dateutil.parser import parse, ParserError
 import pandas as pd
 
 CsvSpecs = namedtuple('CsvSpecs', ['url', 'uid_col_label', 'encoding'])
@@ -31,18 +31,13 @@ class Bears(ABC):
   """Pandas are more like bears than racoons, DNA-wise."""
   def __init__(
       self,
-      datetime_fmt: str = '%m/%d/%y',
       from_csv: bool = None,
       csv_specs: CsvSpecs = None,
       dataframe: pd.DataFrame = None):
-    assert isinstance(datetime_fmt, str), (
-        'Argument `datetime_fmt` must be a string but is instead of '
-        'type {}'.format(type(datetime_fmt)))
     assert from_csv or dataframe is not None, (
         'Use either `from_csv` and `csv_specs` or `dataframe`')
-    self._datetime_fmt = datetime_fmt
     if from_csv:
-      self._df = self.read_time_series_csv(csv_specs, datetime_fmt)
+      self._df = self.read_time_series_csv(csv_specs)
     else:
       self._df = dataframe
 
@@ -56,12 +51,10 @@ class Bears(ABC):
   def _repr_html_(self) -> str:
     """For IPython notebook display"""
     return  r'''
-    <p><b>Datetime format: {}</b></p>
     <p><b>Non Datetime Columns: </b> {}</p>
     <p><b>Datetime Columns:</b> {}</p>
     <p>{}</p>
     '''.format(
-        self.datetime_fmt,
         self.non_datetime_index,
         self.datetime_index,
         self.df._repr_html_()) # pylint: disable=protected-access
@@ -76,26 +69,19 @@ class Bears(ABC):
     self._df = dataframe
 
   @property
-  def datetime_fmt(self):
-    """Returns datetime format suitable for `datetime`"""
-    return self._datetime_fmt
-
-  @property
   def non_datetime_index(self):
     """Returns non-datetime column labels in the `Pandas` dataframe"""
-    non_datetime_index, _ = self.partition_datetime_columns(
-        self.datetime_fmt)
+    non_datetime_index, _ = self.partition_datetime_columns()
     return non_datetime_index
 
   @property
   def datetime_index(self):
     """Returns datetime column labels in the `Pandas` dataframe"""
-    _, datetime_index = self.partition_datetime_columns(
-        self.datetime_fmt)
+    _, datetime_index = self.partition_datetime_columns()
     return datetime_index
 
   def read_time_series_csv(
-      self, csv_specs: CsvSpecs, datetime_fmt: str) -> pd.DataFrame:
+      self, csv_specs: CsvSpecs) -> pd.DataFrame:
     """Initializes obejct from a CSV file
 
     This function must keep all member variables self-consistent.
@@ -106,37 +92,41 @@ class Bears(ABC):
         Used as the `Pandas` index if not `None`. If `None`, `Pandas`
         generates unique row indices.
       csv_specs.encoding (str): Encoding of CSV file, e.g. `ISO-8859-1`
-      datetime_fmt (str): Datetime format, e.g. '%m/%d/%y'
 
     Returns:
       pd.DataFrame` read from the input CSV file
     """
     raise NotImplementedError
 
-  def partition_datetime_columns(
-      self, datetime_fmt='%m/%d/%y') -> Tuple[List, List]:
+  def partition_datetime_columns(self) -> Tuple[List, List]:
     """Partitions dataframe columns into non-datetime vs. datetime"""
     # Time-series column labels are packed to the right
     first_date_col = None
     for first_date_col_label in self.df.columns:
       first_date_col = 0 if first_date_col is None else first_date_col + 1
       try:
-        datetime.datetime.strptime(first_date_col_label, datetime_fmt)
+        parse(first_date_col_label)
         break
-      except ValueError:
+      except ParserError:
         continue
     assert first_date_col is not None and first_date_col < self.df.shape[1], (
-        'Could not find time-series column labels in the form {fmt}. Expected '
+        'Could not find time-series column labels. Expected '
         'a consecutive list of date labels but instead saw this list of '
-        'column labels: {col_labels}').format(
-            fmt=datetime_fmt, col_labels=self.df.columns)
+        'column labels: {col_labels}').format(col_labels=self.df.columns)
     for should_be_date_label in self.df.columns[first_date_col:]:
       try:
-        datetime.datetime.strptime(should_be_date_label, datetime_fmt)
-      except ValueError:
-        raise ValueError((
+        parse(should_be_date_label)
+      except ParserError as mesg:
+        raise ParserError((
             'Expecting all column labels to be dates starting with {} in '
-            '{}').format(self.df[first_date_col], self.df.columns))
+            '{}. {}').format(self.df[first_date_col], self.df.columns, mesg))
+    # rename date columns to %m/%d/%yy
+    column_rename_dict = {}
+    for date in self.df.columns[first_date_col:].tolist():
+      datecode = parse(date)
+      column_rename_dict[date] = '{}/{}/{}'.format(
+          datecode.month, datecode.day, datecode.year)
+    self.df.rename(columns=column_rename_dict, inplace=True)
     return (self.df.columns[0:first_date_col].tolist(),
             self.df.columns[first_date_col:].tolist())
 
