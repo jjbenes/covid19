@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 from fp_covid19.data.bears import Bears, CsvSpecs
 from fp_covid19.cases.compute import counties2states_df
+from fp_covid19.visualization.geojson_helper import USPS_PUB28_DF
 
 CSV_URL_ROOT = (
     'https://usafactsstatic.blob.core.windows.net/public/data/covid-19/')
@@ -22,7 +23,7 @@ CSV_COLUMN_RENAME_DICT = {
 
 def attribution() -> str:
   """Returns data attribution string"""
-  return ('\u0026copy; <a href="https://usafacts.org">USAFacts</a>. ')
+  return '\u0026copy; <a href="https://usafacts.org">USAFacts</a>. '
 
 
 def stitch_time_series_csv_url(
@@ -45,7 +46,27 @@ def stitch_time_series_csv_url(
   """
   return url_root + file_prefix + '_' + db_type + '_' + file_suffix + '.csv'
 
-def _canonical_df(dataframe, column_rename_dict):
+
+def _long_state_names(
+    dataframe: pd.DataFrame, state_col='Province_State') -> pd.DataFrame:
+  """Converts 2-letter U.S. abbreviations to full names"""
+  return dataframe[state_col].transform(
+      lambda x: (
+          USPS_PUB28_DF[['USPS', 'Province_State']]
+          .set_index('USPS').loc[x,]))
+
+def _unassigned_fips(dataframe: pd.DataFrame) -> pd.DataFrame:
+  """Prepend 2-digit state FIPS code to 3-digit county code for
+     unassigned areas"""
+  return dataframe.FIPS.combine(
+      dataframe.stateFIPS,
+      lambda county_fips, state_fips: (
+          (int(state_fips)*1000 + int(county_fips)) if county_fips == '0'
+          else county_fips))
+
+
+def _canonical_df(
+    dataframe: pd.DataFrame, column_rename_dict: Dict) -> pd.DataFrame:
   """Map and order columns"""
   dataframe.rename(columns=column_rename_dict, inplace=True)
   # Turn FIPS into strings without leading zeros to match most GeoJSON files
@@ -62,28 +83,30 @@ def _canonical_df(dataframe, column_rename_dict):
 class Usafacts(Bears):
   """USAFACTS data import"""
   def read_time_series_csv(
-      self, csv_specs: CsvSpecs) -> pd.DataFrame:
+      self, csv_specs: CsvSpecs, drop_all_na_columns=True) -> pd.DataFrame:
     """Converts USAFACTS time-series CSV to Pandas `DataFrame`.
 
-    * Column labels:
-      `countyFIPS, County Name, State, stateFIPS, <date0>,<date1>,...`
+    This function converts the FIPS code into a string without leading zeros,
+    and converts 2-letter U.S. abbreviations to their full names.
 
-    * `countyFIPS` is the unique ID column
-    * `State` uses two-letter state codes, e.g. "New York" is `NY`.
-
-    Note:
-      This function converts the FIPS code into a string without leading zeros.
+    USAFacts CSV files assigns 0 to `countyFIPS` for unallocated regions.
+    There is one unallocated region for each state plus one for New York City.
 
     Args:
       csv_specs (CsvSpecs): CSV URL and encoding specifications
+      drop_all_na_columns (bool): Drop columns that are completely empty
+        (`pd.Dataframe.isna`).
 
     Returns:
       pd.DataFrame:
       Pandas dataframe object of the input CSV file
     """
-    dataframe = pd.read_csv(csv_specs.url, encoding=csv_specs.encoding)
+    dataframe = super().read_time_series_csv(
+        csv_specs=csv_specs, drop_all_na_columns=drop_all_na_columns)
     dataframe = _canonical_df(
         dataframe, column_rename_dict=CSV_COLUMN_RENAME_DICT)
+    dataframe.loc[:, 'Province_State'] = _long_state_names(dataframe)
+    dataframe.loc[:, 'FIPS'] = _unassigned_fips(dataframe)
     return dataframe
 
 
@@ -96,18 +119,29 @@ def get_geo_df(
     `UID,iso2,iso3,code3,FIPS,Admin2,Province_State,Country_Region,Lat,
     Long_,Combined_Key`
 
+    This function converts the FIPS code into a string without leading zeros,
+    and converts 2-letter U.S. abbreviations to their full names.
+
     Args:
       url (str): URL to CSV
+      state_fips (pd.DataFrame): A data frame with at least two columns that
+        maps a state name to a 2-digit FIPS code, e.g.
+        `df.loc[:, ['Province_State', 'stateFIPS']]`
 
     Returns:
       pd.DataFrame:
       Pandas `DataFrame` indexed by `uid_col_label`.
   """
-  geo_df = _canonical_df(
-      dataframe=pd.read_csv(url, encoding=CSV_ENCODING),
-      column_rename_dict=CSV_COLUMN_RENAME_DICT
-  )
-  return geo_df
+  dataframe = pd.read_csv(url, encoding=CSV_ENCODING)
+  dataframe = (
+      _canonical_df(
+          dataframe=dataframe,
+          column_rename_dict=CSV_COLUMN_RENAME_DICT)
+      .rename(columns={'Province_State': 'USPS'}) # abbreviated
+      .merge(
+          on='USPS', # Also abbreviated
+          right=USPS_PUB28_DF[['USPS', 'Province_State']]))
+  return dataframe
 
 
 def get_covid19_us_bears(
@@ -116,7 +150,7 @@ def get_covid19_us_bears(
     file_suffix=CSV_FILE_SUFFIX,
     encoding=CSV_ENCODING) -> Dict[Dict[Bears]]:
   """Converts USAFACTS confirmed and deaths CSV files to state and county
-  `Bears` to a dictionary of dictionaries
+  `Bears` to a dictionary of dictionaries.
 
   Args:
     url_root (str): URL prefix for the CSV
@@ -164,53 +198,46 @@ def get_us_population() -> Dict:
     >>> population = get_us_population()
     >>> population['counties']
             FIPS	             Admin2 Province_State	Population
-    0       	0 Statewide Unallocated	            AL           0
-    1	     1001	     Autauga County	            AL       55869
-    2	     1003	     Baldwin County          	AL       223234
-    3	     1005	     Barbour County          	AL       24686
-    4	     1007	        Bibb County	            AL       22394
+    0        1000 Statewide Unallocated	       Alabama           0
+    1	     1001	     Autauga County	       Alabama       55869
+    2	     1003	     Baldwin County        Alabama      223234
+    3	     1005	     Barbour County        Alabama       24686
+    4	     1007	        Bibb County	       Alabama       22394
     ...	...	...	...	...
-    3190	56037	  Sweetwater County	            WY	     42343
-    3191	56039      	   Teton County	            WY	     23464
-    3192	56041	       Uinta County	            WY	     20226
-    3193	56043	    Washakie County	            WY	      7805
-    3194	56045	      Weston County	            WY	      6927
+    3190	56037	  Sweetwater County	       Wyoming	     42343
+    3191	56039      	   Teton County	       Wyoming	     23464
+    3192	56041	       Uinta County	       Wyoming	     20226
+    3193	56043	    Washakie County	       Wyoming	      7805
+    3194	56045	      Weston County	       Wyoming	      6927
     3195 rows × 4 columns
     >>> population['counties'][population['counties']['Province_State']=='NV']
              FIPS	               Admin2	Province_State	Population
-    1776	    0	Statewide Unallocated	            NV	         0
-    1777	32001	     Churchill County	            NV	     24909
-    1778	32003	         Clark County	            NV	   2266715
-    1779	32005	       Douglas County	            NV	     48905
-    1780	32007	          Elko County	            NV	     52778
-    1781	32009	     Esmeralda County	            NV	       873
-    1782	32011	        Eureka County	            NV	      2029
-    1783	32013	      Humboldt County	            NV	     16831
-    1784	32015	        Lander County	            NV	      5532
-    1785	32017      	   Lincoln County	            NV	      5183
-    1786	32019	          Lyon County	            NV	     57510
-    1787	32021	       Mineral County	            NV	      4505
-    1788	32023	           Nye County	            NV	     46523
-    1789	32027	      Pershing County	            NV	      6725
-    1790	32029	        Storey County	            NV	      4123
-    1791	32031	        Washoe County	            NV	    471519
-    1792	32033	    White Pine County	            NV	      9580
-    1793	32510	          Carson City	            NV	     55916
-    >>> population['states'].sort_values(by='Population', ascending=False)
-        	Population	Province_State
+    1776	32000	Statewide Unallocated	        Nevada	         0
+    1777	32001	     Churchill County	        Nevada	     24909
+    1778	32003	         Clark County	        Nevada	   2266715
+    1779	32005	       Douglas County	        Nevada	     48905
+    1780	32007	          Elko County	        Nevada	     52778
+    1781	32009	     Esmeralda County	        Nevada	       873
+    1782	32011	        Eureka County	        Nevada	      2029
+    1783	32013	      Humboldt County	        Nevada	     16831
+    1784	32015	        Lander County	        Nevada	      5532
+    1785	32017      	   Lincoln County	        Nevada	      5183
+    1786	32019	          Lyon County	        Nevada	     57510
+    1787	32021	       Mineral County	        Nevada	      4505
+    1788	32023	           Nye County	        Nevada	     46523
+    1789	32027	      Pershing County	        Nevada	      6725
+    1790	32029	        Storey County	        Nevada	      4123
+    1791	32031	        Washoe County	        Nevada	    471519
+    1792	32033	    White Pine County	        Nevada	      9580
+    1793	32510	          Carson City	        Nevada	     55916
+    >>> population['states'].nlargest(5, 'Population')
+                Population  Province_State
     index
-    CA	      39512223	            CA
-    TX	      28995881	            TX
-    FL	      21477737	            FL
-    NY	      19453561	            NY
-    PA	      12801989	            PA
-    IL	      12671821	            IL
-    OH	      11689100	            OH
-    GA	      10617423	            GA
-    NC	      10488084	            NC
-    MI	       9986857	            MI
-    NJ	       8882190	            NJ
-    ...
+    California    39512223  California
+    Texas         28995881  Texas
+    Florida       21477737  Florida
+    New York	  19453561  New York
+    Pennsylvania  12801989  Pennsylvania
 
   Returns:
     Dict[Bears]:

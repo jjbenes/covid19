@@ -33,7 +33,7 @@ def check_cumulatives(in_dict: Dict) -> pd.DataFrame:
       not_monotonic_increasing_index[db_type][geo_level] = bears.df[
           bears.datetime_index].T.apply(lambda x: not x.is_monotonic_increasing)
       not_exactly_cumulatives.loc[
-          '{} ({} Cases)'.format(
+          '{} ({} items)'.format(
               geo_level.capitalize(),
               len(not_monotonic_increasing_index[db_type][geo_level])
           ),

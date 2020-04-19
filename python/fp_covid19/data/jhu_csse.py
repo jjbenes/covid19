@@ -49,7 +49,7 @@ def stitch_time_series_csv_url(
 class JhuCsse(Bears):
   """JHU CSSE data import"""
   def read_time_series_csv(
-      self, csv_specs: CsvSpecs) -> pd.DataFrame:
+      self, csv_specs: CsvSpecs, drop_all_na_columns=True) -> pd.DataFrame:
     """Converts JHU CSSE time-series CSV to Pandas `DataFrame`.
 
     Column labels:
@@ -78,18 +78,15 @@ class JhuCsse(Bears):
 
     Args:
       csv_specs (CsvSpecs): CSV URL and encoding specifications
+      drop_all_na_columns (bool): Drop columns that are completely empty
+        (`pd.Dataframe.isna`).
 
     Returns:
       pd.DataFrame:
       Pandas dataframe object of the input CSV file
     """
-    if csv_specs.uid_col_label:
-      dataframe = pd.read_csv(
-          csv_specs.url, encoding=csv_specs.encoding).set_index(
-              csv_specs.uid_col_label)
-    else:
-      dataframe = pd.read_csv(csv_specs.url, encoding=csv_specs.encoding)
-
+    dataframe = super().read_time_series_csv(
+        csv_specs=csv_specs, drop_all_na_columns=drop_all_na_columns)
     # Turn FIPS into strings without leading zeros to match most GeoJSON files
     dataframe.loc[:, 'FIPS'] = (
         dataframe.FIPS.values.astype(np.int64).astype(str))

@@ -81,7 +81,7 @@ class Bears(ABC):
     return datetime_index
 
   def read_time_series_csv(
-      self, csv_specs: CsvSpecs) -> pd.DataFrame:
+      self, csv_specs: CsvSpecs, drop_all_na_columns=True) -> pd.DataFrame:
     """Initializes obejct from a CSV file
 
     This function must keep all member variables self-consistent.
@@ -92,11 +92,18 @@ class Bears(ABC):
         Used as the `Pandas` index if not `None`. If `None`, `Pandas`
         generates unique row indices.
       csv_specs.encoding (str): Encoding of CSV file, e.g. `ISO-8859-1`
+      drop_all_na_columns (bool): Drop columns that are completely empty
+        (`pd.Dataframe.isna`).
 
     Returns:
       pd.DataFrame` read from the input CSV file
     """
-    raise NotImplementedError
+    self.df = pd.read_csv(csv_specs.url, encoding=csv_specs.encoding)
+    if csv_specs.uid_col_label:
+      self.df = self.df.set_index(csv_specs.uid_col_label)
+    if drop_all_na_columns:
+      self.df.dropna(how='all', axis='columns', inplace=True)
+    return self.df
 
   def partition_datetime_columns(self) -> Tuple[List, List]:
     """Partitions dataframe columns into non-datetime vs. datetime"""
