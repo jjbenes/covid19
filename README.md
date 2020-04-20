@@ -8,6 +8,10 @@ https://nbviewer.jupyter.org/github/jjbenes/covid19/tree/master/jupyter/
 You'll learn how to import data from USAFacts and Johns Hopkins, review data tables, plot a few graphs, 
 and visualize data spatially using a U.S. county map.
 
+## Live County-Level Updates
+* The choropleths at https://first-principles.ai/covid-19/map.html are updated using the code here and COVID-19 data from the USAFacts. The choropleths display U.S. state and county confirmed cases.
+* The map at https://first-principles.ai/covid-19/per-capita-map.html shows U.S. per-capita confirmed cases ranked daily from Jan 22, 2020, also using the code here and data from USAFacts.
+
 ## Python Library
 ### Data Import
 
@@ -37,10 +41,10 @@ contains Folium and GeoJSON helper routines to present the data visually using m
   * Confirmed cases: https://usafactsstatic.blob.core.windows.net/public/data/covid-19/covid_confirmed_usafacts.csv
   * Deaths: https://usafactsstatic.blob.core.windows.net/public/data/covid-19/covid_deaths_usafacts.csv
   * County population: https://usafactsstatic.blob.core.windows.net/public/data/covid-19/covid_county_population_usafacts.csv
-* Folium GeoJSON files for U.S. states and counties in the folder "json" with polygon bug fixes for San Francisco County:
-  * https://github.com/python-visualization/folium/blob/master/tests/us-counties.json
-  * https://github.com/python-visualization/folium/blob/master/tests/us-states.json
-* The choropleths at https://first-principles.ai/covid-19/map.html were created from the Johns Hopkins COVID-19 data using the code here. The choropleths display U.S. state and county confirmed cases.
-* The map at https://first-principles.ai/covid-19/per-capita-map.html shows U.S. per-capita confirmed cases ranked daily from Jan 22, 2020. This Jupyter notebook creates it from USAFacts: 
-https://nbviewer.jupyter.org/github/jjbenes/covid19/blob/master/jupyter/covid19_usafacts.ipynb. This one creates it from JHU:
+* Folium GeoJSON files for U.S. states in the folder "json":
+  https://github.com/python-visualization/folium/blob/master/tests/us-states.json
+* U.S. county borders created from USGS data as of 3/11/2020 (which will some day replace the state border json)
+* This Jupyter notebook creates a time-slider choropleth using data from USAFacts: 
+https://nbviewer.jupyter.org/github/jjbenes/covid19/blob/master/jupyter/covid19_usafacts.ipynb.
+* This one creates it using data from JHU:
 https://nbviewer.jupyter.org/github/jjbenes/covid19/blob/master/jupyter/covid19_jhu_csse.ipynb. The difference is just one import statement.
