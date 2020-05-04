@@ -1,5 +1,6 @@
 # Importing and Visualizing COVID-19 Cases
-![US COVID-19 Cases By County](images/us_map.png)
+|![Animated US COVID-19 State Compare](images/animated_compare_states.gif) |![Animated US COVID-19 Cases By County](images/animated_choropleth.gif)
+------------------------|-----
 
 ## Quick Intro
 
@@ -7,10 +8,6 @@ Check out these Jupyter notebooks to get started:
 https://nbviewer.jupyter.org/github/jjbenes/covid19/tree/master/jupyter/
 You'll learn how to import data from USAFacts and Johns Hopkins, review data tables, plot a few graphs,
 and visualize data spatially using a U.S. county map.
-
-![Animated US COVID-19 Cases By County](images/animated_choropleth.gif)
-
-![Animated US COVID-19 State Compare](images/animated_compare_states.gif)
 
 ## Live State- and County-Level Updates
 * The choropleths at https://first-principles.ai/covid-19/map.html are updated using the code here and COVID-19 data from the USAFacts. The choropleths display U.S. state and county confirmed cases.
