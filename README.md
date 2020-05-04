@@ -7,6 +7,7 @@ Check out these Jupyter notebooks to get started:
 https://nbviewer.jupyter.org/github/jjbenes/covid19/tree/master/jupyter/
 You'll learn how to import data from USAFacts and Johns Hopkins, review data tables, plot a few graphs,
 and visualize data spatially using a U.S. county map.
+
 ![Animated US COVID-19 Cases By County](images/animated_choropleth.gif)
 
 ## Live County-Level Updates
