@@ -221,8 +221,8 @@ def get_us_population() -> Dict:
     ...
 
   Returns:
-    Dict[Bears]:
-    A dictionary of two U.S. population `Bears` objects, one for the states
+    Dict[pd.DataFrame]:
+    A dictionary of two U.S. population data frames, one for the states
     and one for the counties.
     ::
 
