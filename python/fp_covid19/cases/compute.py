@@ -65,8 +65,12 @@ def per_capita(bears: Bears, population: pd.DataFrame) -> Bears:
 
   Args:
     bears (Bears): `Bears` time-series
-    population (pd.DataFrame): Population dataframe as returned by, for
-      instance, :py:func:`get_us_population()`.
+    population (pd.DataFrame): Population dataframe with only one column,
+      for instance, using :py:func:`get_us_population()['Population']`.
+
+  Returns:
+    Bears
+    Per-capita :py:class:`Bears` time-series
   """
   per_capita_b = bears.copy(deep=True)
   per_capita_b.df.loc[:, bears.datetime_index] = (
