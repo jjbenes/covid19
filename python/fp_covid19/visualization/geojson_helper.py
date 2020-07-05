@@ -28,6 +28,23 @@ US_ATLANTA_METRO_FIPS = [
    'Rockdale County, GA', 'Spalding County, GA', 'Walton County, GA']
 """
 
+US_BALTIMORE_METRO_FIPS = [
+    '24003', '24005', '24013', '24025', '24027', '24035', '24510']
+"""U.S. Baltimore Metropolitan Area: [
+   'Anne Arundel County, MD', 'Baltimore County, MD', 'Baltimore City, MD',
+   'Carroll County, MD', 'Harford County, MD', 'Howard County, MD',
+   "Queen Anne's County, MD"]
+"""
+
+US_CHARLOTTE_METRO_FIPS = [
+    '37025', '37045', '37071', '37097', '37109', '37119', '37159', '37167',
+    '37179', '45023', '45057', '45091']
+"""U.S. Charlotte Metropolitan Area: [
+   'Mecklenburg County, NC', 'York County, SC', 'Union County, NC',
+   'Gaston County, NC', 'Cabarrus County, NC', 'Iredell County, NC',
+   'Rowan County, NC', 'Lancaster County, SC', 'Cleveland County, NC',
+   'Lincoln County, NC', 'Stanly County, NC', 'Chester County, SC']
+"""
 US_CHICAGO_METRO_FIPS = [
     '17031', '17037', '17043', '17063', '17089', '17091', '17093', '17097',
     '17111', '17197', '18073', '18089', '18111', '18127', '55059']
@@ -37,6 +54,22 @@ US_CHICAGO_METRO_FIPS = [
     'Kendall County, IL', 'McHenry County, IL', 'Will County, IL',
     'Jasper County, IN', 'Lake County, IN', 'Newton County, IN',
     'Porter County, IN', 'Lake County, IL', 'Kenosha County, WI']
+"""
+
+US_DENVER_METRO_FIPS = [
+    '8001', '8005', '8013', '8014', '8019', '8031', '8035', '8039', '8047',
+    '8059', '8093', '8123']
+"""U.S. Denver-Aurora: [
+   'Denver County, CO', 'Arapahoe County, CO', 'Jefferson County, CO',
+   'Adams County, CO', 'Douglas County, CO', 'Broomfield County and City, CO',
+   'Elbert County, CO', 'Park County, CO', 'Clear Creek County, CO',
+   'Gilpin County, CO', 'Boulder County, CO', 'Weld County, CO']
+"""
+
+US_DETROIT_METRO_FIPS = ['26087', '26093', '26099', '26125', '26147', '26163']
+"""U.S. Detroit Metropolitan Area:
+   ['Lapeer County, MI', 'Livingston County, MI', 'Macomb County, MI',
+    'Oakland County, MI', 'St. Clair County, MI', 'Wayne County, MI']
 """
 
 US_DALLAS_FORT_WORTH_METRO_FIPS = [
@@ -81,9 +114,55 @@ US_GREATER_PHILADELPHIA_FIPS = [
    'New Castle County, DE', 'Cecil County, MD', 'Salem County, NJ']
 """
 
+US_INLAND_EMPIRE_FIPS = ['6065', '6071']
+"""U.S. Inland Empire: ['Riverside County, CA', 'San Bernardino County, CA']
+"""
+
 US_MIAMI_METRO_FIPS = ['12011', '12086', '12099']
 """U.S. Miami Metropolitan Area: [
    'Miami-Dade County, FL', 'Broward County, FL', 'Palm Beach County, FL']
+"""
+
+US_PHOENIX_METRO_FIPS = ['4007', '4013', '4021']
+"""U.S. Phoenix Metropolitan Area: [
+    'Maricopa County, AZ', 'Pinal County, AZ', 'Gila County, AZ']
+"""
+
+US_GREATER_PORTLAND_FIPS = [
+    '41005', '41009', '41051', '41067', '41071', '53059']
+"""U.S. Portland-Vancouver-Hillsboro: Clackamas, Columbia, Multnomah,
+   Washington, Yamhill, and Clark counties in Oregon; and Skamania County in
+   Washington."""
+
+US_GREATER_ST_LOUIS_FIPS = [
+    '17005', '17013', '17027', '17083', '17117', '17119', '17133', '17163',
+    '29071', '29099', '29113', '29183', '29189', '29219', '29510']
+"""U.S. Greater St. Louis: [
+   'Bond County, IL', 'Calhoun County, IL', 'Clinton County, IL',
+   'Jersey County, IL', 'Macoupin County, IL', 'Madison County, IL',
+   'Monroe County, IL', 'St. Clair County, IL', 'Franklin County, MO',
+   'Jefferson County, MO', 'Lincoln County, MO', 'St. Charles County, MO',
+   'City of St. Louis, MO', 'St. Louis County, MO', 'Warren County, MO']
+"""
+
+US_MINNEAPOLIS_SAINT_PAUL_FIPS = [
+    '27003', '27019', '27025', '27037', '27053', '27059', '27079', '27095',
+    '27123', '27139', '27141', '27143', '27163', '27171', '55093', '55109']
+"""U.S. Minneapolis-Saint Paul: [
+  'Hennepin County, MN', 'Ramsey County, MN', 'Dakota County, MN',
+  'Anoka County, MN', 'Washington County, MN', 'Scott County, MN',
+  'Wright County, MN', 'Carver County, MN', 'Sherburne County, MN',
+  'St. Croix County, WI', 'Chisago County, MN', 'Pierce County, WI',
+  'Isanti County, MN', 'Le Sueur County, MN', 'Mille Lacs County, MN',
+  'Sibley County, MN']
+"""
+
+US_SAN_DIEGO_FIPS = ['6075']
+"""U.S. San Diego County"""
+
+US_SEATTLE_METRO_FIPS = ['53033', '53053', '53061']
+"""U.S. Seattle Metropolitan Area: [
+   ''King County, WA', 'Pierce County, WA', 'Snohomish County, WA']
 """
 
 US_SF_BAY_AREA_FIPS = ['6001', '6013', '6041', '6055', '6075',
@@ -91,21 +170,39 @@ US_SF_BAY_AREA_FIPS = ['6001', '6013', '6041', '6055', '6075',
 """U.S. San Francisco Bay Area: Alameda, Contra Costa, Marin, Napa,
    San Francisco, San Mateo, Santa Clara, Solano, and Sonoma"""
 
+US_TAMPA_BAY_AREA_FIPS = ['12053', '12057', '12101', '12103']
+"""U.S. Tampa Bay Area: [
+   'Hillsborough County, FL', 'Pinellas County, FL', 'Hernado County, FL',
+   'Pasco County, FL']
+"""
+
 US_NYC_FIPS = ['36005', '36047', '36061', '36081', '36085']
 """U.S. New York City FIPS: Bronx, Kings (Brooklyn), New York (Manhattan),
    Queens, and Richmond (Staten Island)"""
 
 US_METROS = {
-    'Atlanta Metropolian Area, GA': US_ATLANTA_METRO_FIPS,
+    'Atlanta Metropolitan Area, GA': US_ATLANTA_METRO_FIPS,
+    'Baltimore Metropolitan Area, MD': US_BALTIMORE_METRO_FIPS,
+    'Charlotte Metropolitan Area, NC, SC': US_CHARLOTTE_METRO_FIPS,
     'Chicago Metropolitan Area, IL, IN, WI': US_CHICAGO_METRO_FIPS,
     'Dallas-Fort Worth Metroplex, TX': US_DALLAS_FORT_WORTH_METRO_FIPS,
+    'Denvor-Aurora, CO': US_DENVER_METRO_FIPS,
+    'Detroit Metropolitan Area, MI': US_DETROIT_METRO_FIPS,
     'Greater Boston, MA, NH': US_GREATER_BOSTON_FIPS,
     'Greater Houston, TX': US_GREATER_HOUSTON_FIPS,
     'Greater Los Angeles, CA': US_GREATER_LA_FIPS,
     'Greater Philadelphia, DE, NJ, PA': US_GREATER_PHILADELPHIA_FIPS,
+    'Greater Portland, OR, WA': US_GREATER_PORTLAND_FIPS,
+    'Greater St. Louis, IL, MO': US_GREATER_ST_LOUIS_FIPS,
+    'Inland Empire, CA': US_INLAND_EMPIRE_FIPS,
     'Miami Metropolitan Area, FL': US_MIAMI_METRO_FIPS,
+    'Minneapolis-Saint Paul, MN': US_MINNEAPOLIS_SAINT_PAUL_FIPS,
+    'Phoenix Metropolian Area, AZ': US_PHOENIX_METRO_FIPS,
     'New York City, NY': US_NYC_FIPS,
+    'Tampa Bay Area, FL':US_TAMPA_BAY_AREA_FIPS,
+    'San Diego, CA': US_SAN_DIEGO_FIPS,
     'San Francisco Bay Area, CA': US_SF_BAY_AREA_FIPS,
+    'Seattle Metropolitan Area, WA': US_SEATTLE_METRO_FIPS,
 }
 
 USPS_PUB28_DF = pd.DataFrame(
