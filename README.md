@@ -11,10 +11,9 @@ and visualize data spatially using a U.S. county map.
 
 ## Live State- and County-Level Updates
 * The choropleths at https://first-principles.ai/covid-19/map.html are updated using the code here and COVID-19 data from the USAFacts. The choropleths display U.S. state and county confirmed cases.
-* The map at https://first-principles.ai/covid-19/per-capita-map.html shows U.S. per-capita confirmed cases ranked daily from Jan 22, 2020, also using the code here and data from USAFacts.
 * You can compare cumulative and daily cases between any two states
   (including Washington D.C.) using the interactive chart at
-  http://first-principles.ai:5100/compare_states.
+  https://first-principles.ai:5100/compare_states.
 
 ## Python Library
 ### Data Import
